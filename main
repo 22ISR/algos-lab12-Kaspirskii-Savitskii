@@ -1,78 +1,78 @@
 from tkinter import *
-from random import *
+from random import choice, randint
 
 root = Tk()
 root.title("Генератор паролей")
-root.geometry("350x300")
+root.geometry("400x350")
 
-# Списки символов
-symbols_list = [
-    "@", "!", "#", "$", "%", "^", "&", "*", "(", ")", "№", "`", "/", "[", "]", "?", ",", ">", "<", "-", "+", "="
-]
+letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+numbers = "0123456789"
+symbols = "@!#$%^&*()№`/[]?,><-+="
+space = " "
 
-letters_list = [
-    "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
-    "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"
-]
-
-numbers_list = [
-    "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
-]
-
-space_list = [' ']
+def simple_shuffle(lst):
+    n = len(lst)
+    for i in range(n):
+        j = randint(0, n - 1)
+        lst[i], lst[j] = lst[j], lst[i]
 
 def generate_password():
     length = int(spinbox.get())
-    selected_chars = []
-    
-    # Добавляем выбранные символы в общий список
-    if symbols_var.get():
-        selected_chars.extend(symbols_list)
-    if letters_var.get():
-        selected_chars.extend(letters_list)
-    if numbers_var.get():
-        selected_chars.extend(numbers_list)
-    if space_var.get():
-        selected_chars.extend(space_list)
-    
-    # Проверяем, что хотя бы один вариант выбран
-    if not selected_chars:
+    use_letters = letters_var.get()
+    use_numbers = numbers_var.get()
+    use_symbols = symbols_var.get()
+    use_space = space_var.get()
+
+    if not (use_letters or use_numbers or use_symbols or use_space):
         textbox.delete(0, END)
-        textbox.insert(0, "Выберите хотя бы один вариант")
+        textbox.insert(0, "Выберите хотя бы один тип символов")
         return
-    
-    # Генерируем пароль
-    password = ''.join(choice(selected_chars) for _ in range(length))
+
+    password_chars = []
+    if use_letters:
+        password_chars.append(choice(letters))
+    if use_numbers:
+        password_chars.append(choice(numbers))
+    if use_symbols:
+        password_chars.append(choice(symbols))
+    if use_space:
+        password_chars.append(choice(space))
+
+    all_chars = letters
+    if use_numbers:
+        all_chars += numbers
+    if use_symbols:
+        all_chars += symbols
+    if use_space:
+        all_chars += space
+
+    while len(password_chars) < length:
+        password_chars.append(choice(all_chars))
+
+    simple_shuffle(password_chars)
+
+    password = "".join(password_chars[:length])
     textbox.delete(0, END)
     textbox.insert(0, password)
 
-# Элементы интерфейса
-spinbox = Spinbox(root, from_=1, to=100, width=10)
+spinbox = Spinbox(root, from_=5, to=50, width=10)
 spinbox.pack(padx=140, pady=10, anchor=NW)
 
-# Переменные для чекбоксов
-symbols_var = IntVar()
-symbols_checkbutton = Checkbutton(text="Включить символы", variable=symbols_var)
-symbols_checkbutton.pack(padx=6, pady=4, anchor=NW)
-
-letters_var = IntVar()
-letters_checkbutton = Checkbutton(text="Включить буквы", variable=letters_var)
-letters_checkbutton.pack(padx=6, pady=4, anchor=NW)
+letters_var = IntVar(value=1)
+Checkbutton(root, text="Включить буквы", variable=letters_var).pack(padx=6, pady=4, anchor=NW)
 
 numbers_var = IntVar()
-numbers_checkbutton = Checkbutton(text="Включить цифры", variable=numbers_var)
-numbers_checkbutton.pack(padx=6, pady=4, anchor=NW)
+Checkbutton(root, text="Включить цифры", variable=numbers_var).pack(padx=6, pady=4, anchor=NW)
+
+symbols_var = IntVar()
+Checkbutton(root, text="Включить символы", variable=symbols_var).pack(padx=6, pady=4, anchor=NW)
 
 space_var = IntVar()
-space_checkbutton = Checkbutton(text="Включить пробел", variable=space_var)
-space_checkbutton.pack(padx=6, pady=4, anchor=NW)
+Checkbutton(root, text="Включить пробел", variable=space_var).pack(padx=6, pady=4, anchor=NW)
 
-# Поле для вывода пароля
 textbox = Entry(root, font=("Arial", 16))
 textbox.pack(pady=10)
 
-# Кнопка генерации
-btn = Button(text="Прикоснись ко мне", command=generate_password)
-btn.pack()
+Button(root, text="Сгенерировать пароль", command=generate_password).pack()
 
 root.mainloop()
